@@ -1,0 +1,23 @@
+{
+  "name": "shootemgame",
+  "description": "",
+  "version": "0.0.1",
+  "private": true,
+  "author": "Lee Dale",
+  "scripts": {
+    "start": "webpack-dev-server --open"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "ts-loader": "^3.2.0",
+    "typescript": "^2.6.2",
+    "webpack": "^3.10.0",
+    "webpack-dev-server": "^2.9.7"
+  },
+  "keywords": [],
+  "repository": "",
+  "licenses": [
+    {}
+  ]
+}
