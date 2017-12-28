@@ -21,7 +21,7 @@ export class PlayerSpaceShip extends Sprite {
             x: initialX,
             y: initialY,
             image: image,
-            deltaX: 2,
+            deltaX: 4,
             deltaYForward: 5,
             deltaYBackward: 3
         };

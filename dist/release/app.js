@@ -322,7 +322,7 @@ class PlayerSpaceShip extends Sprite_1.Sprite {
             x: initialX,
             y: initialY,
             image: image,
-            deltaX: 2,
+            deltaX: 4,
             deltaYForward: 5,
             deltaYBackward: 3
         };
