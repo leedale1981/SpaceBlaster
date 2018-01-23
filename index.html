@@ -4,13 +4,37 @@
 <head>
     <script src="/dist/release/app.js"></script>
 </head>
+<style>
+    body {
+        background-color: 400a3e;
+    }
+    
+    header {
+        height: 200px;
+        width: 100%;
+    }
+    
+    header img {
+        height: 100px;
+    }
+    
+    game {
+        height: 720px;
+        width: 1024px;
+    }
+</style>
 
 <body>
-    <canvas id="canvas" height="720" width="1280"></canvas>
-    <img src="/images/PlayerSpaceShip.png" id="player-spaceship" style="display:none" />
-    <img src="/images/PlayerSpaceShip_WithThrust.png" id="player-spaceship-with-thrust" style="display:none" />
-    <img src="/images/Enemy1.png" id="enemy1-spaceship" style="display:none" />
-    <img src="/images/Bullet1.png" id="player-bullet" style="display:none" />
+    <div id="header">
+        <img src="/images/Text/logo.jpg">
+    </div>
+    <div id="game">
+        <canvas id="canvas" height="768" width="1024"></canvas>
+        <img src="/images/PlayerSpaceShip.png" id="player-spaceship" style="display:none" />
+        <img src="/images/PlayerSpaceShip_WithThrust.png" id="player-spaceship-with-thrust" style="display:none" />
+        <img src="/images/Enemy1.png" id="enemy1-spaceship" style="display:none" />
+        <img src="/images/Bullet1.png" id="player-bullet" style="display:none" />
+    </div>
 </body>
 
 </html>
