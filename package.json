@@ -1,19 +1,24 @@
 {
-  "name": "shootemgame",
+  "name": "spaceblaster",
   "description": "",
   "version": "0.0.1",
   "private": true,
   "author": "Lee Dale",
   "scripts": {
-    "start": "webpack-dev-server --open"
+    "start": "node server.js"
   },
-  "dependencies": {},
+  "dependencies": {
+    "express": "^4.17.1",
+    "path": "^0.12.7"
+  },
   "devDependencies": {
-    "gulp": "^3.9.1",
-    "ts-loader": "^3.2.0",
-    "typescript": "^2.6.2",
-    "webpack": "^3.10.0",
-    "webpack-dev-server": "^2.9.7"
+    "gulp": "4.0.2",
+    "gulp-util": "^3.0.8",
+    "ts-loader": "6.2.1",
+    "typescript": "3.7.2",
+    "webpack": "4.41.2",
+    "webpack-cli": "^3.3.10",
+    "webpack-dev-server": "3.9.0"
   },
   "keywords": [],
   "repository": "",
