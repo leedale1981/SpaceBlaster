@@ -22,4 +22,38 @@ export class Enemy1 extends Sprite {
 
         super(ctx, spriteOptions);
     }
+
+    public moveForward(): void {
+        let self = this;
+        super.moveBack();
+    }
+
+    public moveLeft(): void {
+        let self = this;
+        self.skew();
+        super.moveLeft();
+    }
+
+    public moveRight(): void {
+        let self = this;
+        self.skew();
+        super.moveRight();
+    }
+
+    public moveBack(): void {
+        let self = this;
+        super.moveForward();
+    }
+
+    public move(): void {
+        
+    }
+
+    private skew(): void {
+        let self = this;
+
+        if (self.options.width > 40) {
+            self.options.width = self.options.width / 1.1;
+        }
+    }
 }

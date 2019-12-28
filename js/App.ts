@@ -9,5 +9,5 @@ window.onload = () => {
     ctx = canvas.getContext("2d");
 
     gameLoop = new GameLoop(ctx);
-    gameLoop.start();
+    gameLoop.render();
 }

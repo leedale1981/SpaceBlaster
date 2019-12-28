@@ -3,12 +3,15 @@ import { GameObject } from "./GameObject";
 import { KeyboardInput } from "./KeyboardInput";
 import { PlayerSpaceShip } from "./sprites/PlayerSpaceShip";
 import { Star } from "./sprites/Star";
+import { Level } from "./levels/Level";
+import { LevelOne } from "./levels/LevelOne";
 
 export class GameLoop extends GameObject {
 
     private playerSprite: PlayerSpaceShip;
     private keyboardInput: KeyboardInput;
     private stars: Array<Star>;
+    private levels: Array<Level>;
 
     constructor(ctx: CanvasRenderingContext2D) {
         super(ctx);
@@ -43,7 +46,7 @@ export class GameLoop extends GameObject {
         this.keyboardInput.addKeycodeCallback(32, self.playerSprite.fireBullet.bind(self.playerSprite));
     }
 
-    private setupBackgroundStars() {
+    private setupBackgroundStars(): void {
         let self = this;
         self.stars = [];
 
@@ -52,8 +55,15 @@ export class GameLoop extends GameObject {
         }
     }
 
-    public start(): void {
-        window.requestAnimationFrame(this.start.bind(this));
+    private setupLevels(): void {
+        let self = this;
+        self.levels = [];
+
+        self.levels.push(new LevelOne());
+    }
+
+    public render(): void {
+        window.requestAnimationFrame(this.render.bind(this));
         this.keyboardInput.inputLoop();
         this.clearCanvas();
         this.moveStars();
@@ -80,4 +90,6 @@ export class GameLoop extends GameObject {
         let self = this;
         self.playerSprite.render();
     }
+
+    private 
 }
