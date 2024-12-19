@@ -1,39 +1,14 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <script src="/dist/release/app.js"></script>
-</head>
-<style>
-    body {
-        background-color: 400a3e;
-    }
-    
-    #header {
-        width: 100%;
-    }
-    
-    #header img {
-        width: 1024px;
-    }
-    
-    #game {
-        height: 720px;
-        width: 1024px;
-    }
-</style>
-
-<body>
-    <div id="header">
-        <img src="/images/Text/logo.jpg">
-    </div>
-    <div id="game">
-        <canvas id="canvas" height="768" width="1024"></canvas>
-        <img src="/images/PlayerSpaceShip.png" id="player-spaceship" style="display:none" />
-        <img src="/images/PlayerSpaceShip_WithThrust.png" id="player-spaceship-with-thrust" style="display:none" />
-        <img src="/images/Enemy1.png" id="enemy1-spaceship" style="display:none" />
-        <img src="/images/Bullet1.png" id="player-bullet" style="display:none" />
-    </div>
-</body>
-
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + TS</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+    <script type="module" src="/src/App.ts"></script>
+  </body>
 </html>
