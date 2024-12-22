@@ -1,5 +1,4 @@
 import { Sprite } from "./Sprite";
-import { GameConfig } from "../GameConfig";
 import * as SpriteOptions from "./SpriteOptions";
 
 export class Enemy1 extends Sprite {
@@ -24,24 +23,20 @@ export class Enemy1 extends Sprite {
     }
 
     public moveForward(): void {
-        let self = this;
         super.moveBack();
     }
 
-    public moveLeft(): void {
-        let self = this;
-        self.skew();
+    public moveLeft = () => {
+        this.skew();
         super.moveLeft();
     }
 
-    public moveRight(): void {
-        let self = this;
-        self.skew();
+    public moveRight = () => {
+        this.skew();
         super.moveRight();
     }
 
-    public moveBack(): void {
-        let self = this;
+    public moveBack = () => {
         super.moveForward();
     }
 
@@ -49,11 +44,9 @@ export class Enemy1 extends Sprite {
         
     }
 
-    private skew(): void {
-        let self = this;
-
-        if (self.options.width > 40) {
-            self.options.width = self.options.width / 1.1;
+    private skew = () => {
+        if (this.options.width > 40) {
+            this.options.width = this.options.width / 1.1;
         }
     }
 }

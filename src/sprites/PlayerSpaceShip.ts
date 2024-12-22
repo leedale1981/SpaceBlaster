@@ -31,75 +31,96 @@ export class PlayerSpaceShip extends Sprite {
         this.canFire = true;
     }
 
-    public swapImageToThrust() {
+    public swapImageToThrust = () => {
         let newImage: HTMLImageElement = <HTMLImageElement>document.getElementById("player-spaceship-with-thrust");
         super.swapImage(newImage);
     }
 
-    public swapImageToNoThrust() {
+    public swapImageToNoThrust = () => {
         let image: HTMLImageElement = <HTMLImageElement>document.getElementById("player-spaceship");
         super.swapImage(image);
     }
 
-    public moveForward(): void {
-        let self = this;
-        self.swapImageToThrust();
-        super.moveForward();
+    public moveForward = () => {
+        this.swapImageToThrust();
+        if (this.getYCoord() >= 0) {
+            super.moveForward();
+        }
     }
 
-    public moveLeft(): void {
-        let self = this;
-        self.skew();
-        super.moveLeft();
+    public moveLeft = () => {
+        this.skew();
+
+        if (this.getXCoord() >= 0) {
+            super.moveLeft();
+        }
     }
 
-    public moveRight(): void {
-        let self = this;
-        self.skew();
-        super.moveRight();
+    public moveRight = () => {
+        this.skew();
+
+        if (this.getXCoord() + this.options.width <= this.ctx.canvas.width) {
+            super.moveRight();
+        }
     }
 
-    public moveBack(): void {
-        let self = this;
-        self.swapImageToNoThrust();
-        super.moveBack();
+    public moveBack = () => {
+        this.swapImageToNoThrust();
+
+        if (this.getYCoord() + this.options.height <= this.ctx.canvas.height) {
+            super.moveBack();
+        }
     }
 
-    public fireBullet() {
-        let self = this;
-
-        if (self.canFire) {
-            let bullet: Bullet = new Bullet(self.ctx, self);
+    public fireBullet = () => {
+        if (this.canFire) {
+            let bullet: Bullet = new Bullet(this.ctx, this);
             bullet.moveForward();
-            self.bullets.push(bullet);
-            self.canFire = false;
+            this.bullets.push(bullet);
+            this.canFire = false;
             
             setTimeout(() => {
-                self.canFire = true;
+                this.canFire = true;
             }, 300);
         }
     }
 
-    private skew(): void {
-        let self = this;
-
-        if (self.options.width > 40) {
-            self.options.width = self.options.width / 1.1;
+    private skew = () => {
+        if (this.options.width > 40) {
+            this.options.width = this.options.width / 1.1;
         }
     }
 
-    public removeSkew(): void {
-        let self = this;
-        self.options.width = 60;
+    public removeSkew = () => {
+        this.options.width = 60;
     }
 
-    public render(): void {
-        let self = this;
-        
-        self.bullets.forEach((bullet: Bullet) => {
+    public render() {
+        this.bullets.forEach((bullet: Bullet) => {
             bullet.render();
         });
 
+        this.detectBulletsAtEdge();
         super.render();
+    }
+
+    private detectBulletsAtEdge() {
+        for (let index = 0; index < this.bullets.length; index++) {
+            let bullet: Bullet = this.bullets[index];
+            if (bullet.isAtEdge()) {
+                this.removeBullet(index);
+            }
+        }
+    }
+
+    private removeBullet(removeIndex: number) {
+        let newBullets = new Array<Bullet>();
+        for (let index = 0; index < this.bullets.length; index++) {
+            if (index != removeIndex) {
+                newBullets.push(this.bullets[index]);
+            }
+        }
+
+        this.bullets = newBullets;
     }
 }

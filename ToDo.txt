@@ -1,0 +1,5 @@
+- Keep Score
+- Add Levels
+- Add collision detection
+- Add enemies
+- Start/stop game

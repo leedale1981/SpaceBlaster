@@ -9,13 +9,14 @@ export class Star extends Sprite {
         let height: number = 2;
         let initialX: number = Math.floor(Math.random() * GameConfig.canvasWidth) + 1;
         let initialY: number = Math.floor(Math.random() * GameConfig.canvasHeight) + 1;
+        let image: HTMLImageElement = <HTMLImageElement>document.getElementById("player-spaceship");
 
         let spriteOptions: SpriteOptions.SpriteOptions = {
             height: height,
             width: width,
             x: initialX,
             y: initialY,
-            image: null,
+            image: image,
             deltaX: 2,
             deltaYForward: 1,
             deltaYBackward: 2

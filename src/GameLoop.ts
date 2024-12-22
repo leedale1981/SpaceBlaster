@@ -5,27 +5,30 @@ import { PlayerSpaceShip } from "./sprites/PlayerSpaceShip";
 import { Star } from "./sprites/Star";
 import { Level } from "./levels/Level";
 import { LevelOne } from "./levels/LevelOne";
+import { Sprite } from "./sprites/Sprite";
 
 export class GameLoop extends GameObject {
-
     private playerSprite: PlayerSpaceShip;
     private keyboardInput: KeyboardInput;
     private stars: Array<Star>;
     private levels: Array<Level>;
+    private sprites: Array<Sprite>;
 
     constructor(ctx: CanvasRenderingContext2D) {
         super(ctx);
-        let self = this;
 
-        self.setupBackgroundStars();
-        self.playerSprite = new PlayerSpaceShip(ctx);
-        self.setupPlayerSpaceshipKeyboardInputs();
+        this.playerSprite = new PlayerSpaceShip(ctx);
+        this.keyboardInput = new KeyboardInput();
+        this.stars = [];
+        this.levels = [];
+        this.sprites = [this.playerSprite];
+        this.setupBackgroundStars();
+        this.setupPlayerSpaceshipKeyboardInputs();
     }
 
-    private setupPlayerSpaceshipKeyboardInputs() {
+    private setupPlayerSpaceshipKeyboardInputs = () => {
         let self = this;
 
-        this.keyboardInput = new KeyboardInput();
         this.keyboardInput.addKeycodeCallback(37, self.playerSprite.moveLeft.bind(self.playerSprite));
         this.keyboardInput.addKeycodeCallback(65, self.playerSprite.moveLeft.bind(self.playerSprite));
         this.keyboardInput.addKeycodeUpCallback(37, self.playerSprite.removeSkew.bind(self.playerSprite));
@@ -46,48 +49,45 @@ export class GameLoop extends GameObject {
         this.keyboardInput.addKeycodeCallback(32, self.playerSprite.fireBullet.bind(self.playerSprite));
     }
 
-    private setupBackgroundStars(): void {
+    private setupBackgroundStars = () => {
         let self = this;
-        self.stars = [];
 
         for (let index = 0; index < GameConfig.starDensity; index++) {
-            self.stars.push(new Star(self.ctx));
+            self.stars.push(new Star(this.ctx));
         }
     }
 
-    private setupLevels(): void {
-        let self = this;
-        self.levels = [];
-
-        self.levels.push(new LevelOne());
+    private setupLevels = () => {
+        this.levels.push(new LevelOne());
     }
 
-    public render(): void {
+    public render = () => {
         window.requestAnimationFrame(this.render.bind(this));
         this.keyboardInput.inputLoop();
         this.clearCanvas();
         this.moveStars();
-        this.renderPlayerSprite();
+
+        for (let index = 0; index < this.sprites.length; index++) {
+            let sprite = this.sprites[index];
+            sprite.render();
+        }
+
+        this.detectCollisions();
     }
 
-    private moveStars(): void {
-        let self = this;
-
-        self.stars.forEach((star: Star) => {
+    private moveStars = () => {
+        this.stars.forEach((star: Star) => {
             star.moveBack();
             star.render();
         });
     }
 
-    private clearCanvas(): void {
-        let self = this;
-
-        self.ctx.fillStyle = "black";
-        self.ctx.fillRect(0, 0, GameConfig.canvasWidth, GameConfig.canvasHeight);
+    private clearCanvas = () => {
+        this.ctx.fillStyle = "black";
+        this.ctx.fillRect(0, 0, GameConfig.canvasWidth, GameConfig.canvasHeight);
     }
 
-    private renderPlayerSprite(): void {
-        let self = this;
-        self.playerSprite.render();
+    private detectCollisions() {
+        
     }
 }

@@ -13,33 +13,29 @@ export class Sprite extends GameObject {
         this.options = options;
     }
     
-    public render(): void {
-        let self = this;
-
-        self.ctx.drawImage(
-            self.options.image, 
-            self.options.x, 
-            self.options.y, 
-            self.options.width, 
-            self.options.height);
+    public render() {
+        this.ctx.drawImage(
+            this.options.image, 
+            this.options.x, 
+            this.options.y, 
+            this.options.width, 
+            this.options.height);
     }
 
-    public moveLeft(): void {
-        let self = this;
-        self.options.x =  self.options.x - (self.options.deltaX);
+    public moveLeft() {
+        this.options.x =  this.options.x - (this.options.deltaX);
     }
 
-    public moveRight(): void {
-        let self = this;
-        self.options.x =  self.options.x + self.options.deltaX;
+    public moveRight() {
+        this.options.x =  this.options.x + this.options.deltaX;
     }
 
-    public moveForward(): void {
+    public moveForward() {
         let self = this;
         self.options.y =  self.options.y - self.options.deltaYForward;
     }
 
-    public moveBack() : void {
+    public moveBack() {
         let self = this;
 
         if (self.options.y >= self.ctx.canvas.height) {
@@ -61,5 +57,9 @@ export class Sprite extends GameObject {
     public getYCoord(): number {
         let self = this;
         return self.options.y;
+    }
+
+    public collisionDetected() {
+        
     }
 }

@@ -1,9 +1,7 @@
 import { Sprite } from "./Sprite";
-import { GameConfig } from "../GameConfig";
 import * as SpriteOptions from "./SpriteOptions";
 
 export class Bullet extends Sprite {
-    private parentSprite: Sprite;
 
     constructor(ctx: CanvasRenderingContext2D, parentSprite: Sprite) { 
         let image: HTMLImageElement = <HTMLImageElement>document.getElementById("player-bullet");
@@ -34,5 +32,14 @@ export class Bullet extends Sprite {
                 self.moveForward();
             }
         }, 5);
+    }
+    
+    public isAtEdge(): boolean {
+        if (this.getYCoord() <= 0) {
+            this.ctx.clearRect(this.getXCoord(), this.getYCoord(), this.options.width, this.options.height);
+            return true
+        }
+
+        return false;
     }
 }
