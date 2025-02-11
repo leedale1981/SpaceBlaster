@@ -3,15 +3,15 @@ import { GameObject } from "./GameObject";
 import { KeyboardInput } from "./KeyboardInput";
 import { PlayerSpaceShip } from "./sprites/PlayerSpaceShip";
 import { Star } from "./sprites/Star";
-import { Level } from "./levels/Level";
-import { LevelOne } from "./levels/LevelOne";
+//import { Level } from "./levels/Level";
+//import { LevelOne } from "./levels/LevelOne";
 import { Sprite } from "./sprites/Sprite";
 
 export class GameLoop extends GameObject {
     private playerSprite: PlayerSpaceShip;
     private keyboardInput: KeyboardInput;
     private stars: Array<Star>;
-    private levels: Array<Level>;
+    //private levels: Array<Level>;
     private sprites: Array<Sprite>;
 
     constructor(ctx: CanvasRenderingContext2D) {
@@ -20,7 +20,7 @@ export class GameLoop extends GameObject {
         this.playerSprite = new PlayerSpaceShip(ctx);
         this.keyboardInput = new KeyboardInput();
         this.stars = [];
-        this.levels = [];
+        //this.levels = [];
         this.sprites = [this.playerSprite];
         this.setupBackgroundStars();
         this.setupPlayerSpaceshipKeyboardInputs();
@@ -57,9 +57,9 @@ export class GameLoop extends GameObject {
         }
     }
 
-    private setupLevels = () => {
-        this.levels.push(new LevelOne());
-    }
+    // private setupLevels = () => {
+    //     this.levels.push(new LevelOne());
+    // }
 
     public render = () => {
         window.requestAnimationFrame(this.render.bind(this));

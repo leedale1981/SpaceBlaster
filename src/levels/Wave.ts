@@ -1,5 +1,5 @@
 import { Sprite } from "../sprites/Sprite";
-import { Enemy1 } from "../sprites/Enemy1";
+//import { Enemy1 } from "../sprites/Enemy1";
 
 export class Wave {
     
