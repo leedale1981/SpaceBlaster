@@ -50,6 +50,8 @@ export class LevelOne extends Level {
         if (!this.isStarted() || this.completed) {
             return {
                 enemiesDestroyed: 0,
+                enemyScoreGained: 0,
+                asteroidHits: 0,
                 asteroidsDestroyed: 0,
                 playerHit: false
             };
@@ -62,6 +64,8 @@ export class LevelOne extends Level {
 
         return {
             enemiesDestroyed: 0,
+            enemyScoreGained: 0,
+            asteroidHits: 0,
             asteroidsDestroyed: 0,
             playerHit: false
         };

@@ -1,5 +1,6 @@
 import { Sprite } from "../sprites/Sprite";
 import { Enemy1 } from "../sprites/Enemy1";
+import { Enemy2 } from "../sprites/Enemy2";
 import { EnemyBullet } from "../sprites/EnemyBullet";
 import { PlayerSpaceShip } from "../sprites/PlayerSpaceShip";
 import { Bullet } from "../sprites/Bullet";
@@ -32,6 +33,8 @@ type EnemyBehavior = {
     swayFrequency: number;
 };
 
+type EnemyShip = Enemy1 | Enemy2;
+
 type BulletImpactExplosion = {
     x: number;
     y: number;
@@ -40,7 +43,7 @@ type BulletImpactExplosion = {
 
 export class Wave {
     private readonly ctx: CanvasRenderingContext2D;
-    private enemies: Array<Enemy1>;
+    private enemies: Array<EnemyShip>;
     private enemyBullets: Array<EnemyBullet>;
     private completed: boolean;
     private readonly startDelay: number;
@@ -57,7 +60,9 @@ export class Wave {
     private readonly shootCooldown: number;
     private readonly enemyBulletSpeed: number;
     private shootTick: number;
-    private enemyBehaviors: Map<Enemy1, EnemyBehavior>;
+    private enemyBehaviors: Map<EnemyShip, EnemyBehavior>;
+    private enemyHitPoints: Map<EnemyShip, number>;
+    private enemyScoreValues: Map<EnemyShip, number>;
     private bulletImpactExplosions: Array<BulletImpactExplosion>;
     private asteroids: Array<Asteroid>;
     private asteroidSpawnSchedule: Array<number>;
@@ -82,7 +87,9 @@ export class Wave {
         this.shootCooldown = config.shootCooldown ?? 45;
         this.enemyBulletSpeed = config.enemyBulletSpeed ?? 3;
         this.shootTick = 0;
-        this.enemyBehaviors = new Map<Enemy1, EnemyBehavior>();
+        this.enemyBehaviors = new Map<EnemyShip, EnemyBehavior>();
+        this.enemyHitPoints = new Map<EnemyShip, number>();
+        this.enemyScoreValues = new Map<EnemyShip, number>();
         this.bulletImpactExplosions = [];
         this.asteroids = [];
         this.asteroidSpawnSchedule = [];
@@ -108,7 +115,7 @@ export class Wave {
         }
 
         this.moveEnemies(player);
-        this.enemies.forEach((enemy: Enemy1) => {
+        this.enemies.forEach((enemy: EnemyShip) => {
             enemy.render();
         });
 
@@ -125,28 +132,44 @@ export class Wave {
         if (this.completed) {
             return {
                 enemiesDestroyed: 0,
+                enemyScoreGained: 0,
+                asteroidHits: 0,
                 asteroidsDestroyed: 0,
                 playerHit: false
             };
         }
 
         const bulletsToRemove: Array<Bullet> = [];
-        const enemiesToRemove: Array<Enemy1> = [];
+        const enemiesToRemove: Array<EnemyShip> = [];
+        const enemyHitCounts = new Map<EnemyShip, number>();
         const enemyBulletsToRemove: Array<EnemyBullet> = [];
         const asteroidsToDamage: Array<Asteroid> = [];
         const asteroidImpactInertia = new Map<Asteroid, number>();
         let playerHit = false;
+        let asteroidHits = 0;
         let asteroidsDestroyed = 0;
+        let enemyScoreGained = 0;
 
         player.getBullets().forEach((bullet: Bullet) => {
-            this.enemies.forEach((enemy: Enemy1) => {
+            let bulletConsumed = false;
+
+            this.enemies.some((enemy: EnemyShip) => {
                 if (this.isCollision(bullet, enemy)) {
                     bulletsToRemove.push(bullet);
-                    enemiesToRemove.push(enemy);
+                    const hits = enemyHitCounts.get(enemy) ?? 0;
+                    enemyHitCounts.set(enemy, hits + 1);
+                    bulletConsumed = true;
+                    return true;
                 }
+
+                return false;
             });
 
-            this.asteroids.forEach((asteroid: Asteroid) => {
+            if (bulletConsumed) {
+                return;
+            }
+
+            this.asteroids.some((asteroid: Asteroid) => {
                 if (this.isCollision(bullet, asteroid)) {
                     bulletsToRemove.push(bullet);
                     asteroidsToDamage.push(asteroid);
@@ -155,7 +178,10 @@ export class Wave {
                     asteroidImpactInertia.set(asteroid, Math.max(existingImpact, bullet.getInertia()));
 
                     this.createBulletImpactExplosion(bullet, asteroid);
+                    return true;
                 }
+
+                return false;
             });
         });
 
@@ -166,19 +192,36 @@ export class Wave {
             });
         }
 
-        if (enemiesToRemove.length > 0) {
-            const uniqueEnemies = Array.from(new Set(enemiesToRemove));
-            this.enemies = this.enemies.filter((enemy: Enemy1) => {
-                return !uniqueEnemies.includes(enemy);
+        if (enemyHitCounts.size > 0) {
+            enemyHitCounts.forEach((hitCount: number, enemy: EnemyShip) => {
+                const currentHealth = this.enemyHitPoints.get(enemy) ?? 1;
+                const nextHealth = currentHealth - hitCount;
+
+                if (nextHealth <= 0) {
+                    enemiesToRemove.push(enemy);
+                } else {
+                    this.enemyHitPoints.set(enemy, nextHealth);
+                }
             });
 
-            uniqueEnemies.forEach((enemy: Enemy1) => {
-                this.enemyBehaviors.delete(enemy);
-            });
+            if (enemiesToRemove.length > 0) {
+                const uniqueEnemies = Array.from(new Set(enemiesToRemove));
+                uniqueEnemies.forEach((enemy: EnemyShip) => {
+                    enemyScoreGained = enemyScoreGained + (this.enemyScoreValues.get(enemy) ?? 100);
+                    this.enemyBehaviors.delete(enemy);
+                    this.enemyHitPoints.delete(enemy);
+                    this.enemyScoreValues.delete(enemy);
+                });
+
+                this.enemies = this.enemies.filter((enemy: EnemyShip) => {
+                    return !uniqueEnemies.includes(enemy);
+                });
+            }
         }
 
         if (asteroidsToDamage.length > 0) {
             const uniqueAsteroids = Array.from(new Set(asteroidsToDamage));
+            asteroidHits = uniqueAsteroids.length;
             uniqueAsteroids.forEach((asteroid: Asteroid) => {
                 const impactInertia = asteroidImpactInertia.get(asteroid) ?? 1;
                 asteroid.applyBulletImpact(impactInertia);
@@ -192,7 +235,11 @@ export class Wave {
         }
 
         // Allow the player to block enemy fire with bullets.
-        player.getBullets().forEach((playerBullet: Bullet) => {
+        const activePlayerBullets = player.getBullets().filter((playerBullet: Bullet) => {
+            return !bulletsToRemove.includes(playerBullet);
+        });
+
+        activePlayerBullets.forEach((playerBullet: Bullet) => {
             this.enemyBullets.forEach((enemyBullet: EnemyBullet) => {
                 if (this.isCollision(playerBullet, enemyBullet)) {
                     bulletsToRemove.push(playerBullet);
@@ -225,7 +272,7 @@ export class Wave {
             }
         });
 
-        this.enemies.forEach((enemy: Enemy1) => {
+        this.enemies.forEach((enemy: EnemyShip) => {
             if (this.isCollision(enemy, player) && !player.isInvulnerable()) {
                 playerHit = true;
             }
@@ -246,6 +293,8 @@ export class Wave {
 
         return {
             enemiesDestroyed: Array.from(new Set(enemiesToRemove)).length,
+            enemyScoreGained: enemyScoreGained,
+            asteroidHits: asteroidHits,
             asteroidsDestroyed: asteroidsDestroyed,
             playerHit: playerHit
         };
@@ -348,7 +397,7 @@ export class Wave {
         const formationWidth = (this.columns - 1) * this.columnSpacing;
         const startX = (this.ctx.canvas.width / 2) - (formationWidth / 2);
         const midColumn = (this.columns - 1) / 2;
-        const spawnedEnemies: Array<Enemy1> = [];
+        const spawnedEnemies: Array<EnemyShip> = [];
         const spawnStagger = 45;
 
         for (let row = 0; row < this.rows; row++) {
@@ -356,9 +405,16 @@ export class Wave {
                 const enemyX = startX + (column * this.columnSpacing);
                 const spawnOrder = (row * this.columns) + column;
                 const enemyY = this.startY - (spawnOrder * spawnStagger) - (row * this.rowSpacing);
-                const enemy = new Enemy1(this.ctx, enemyX, enemyY);
+                const useLargeEnemy = this.waveNumber > 2 && column === this.columns - 1;
+                const enemy: EnemyShip = useLargeEnemy
+                    ? new Enemy2(this.ctx, enemyX, enemyY)
+                    : new Enemy1(this.ctx, enemyX, enemyY);
+
                 this.enemies.push(enemy);
                 spawnedEnemies.push(enemy);
+
+                this.enemyHitPoints.set(enemy, useLargeEnemy ? 2 : 1);
+                this.enemyScoreValues.set(enemy, useLargeEnemy ? 200 : 100);
 
                 const laneOffset = (column - midColumn) * 26;
                 const rowVariation = (row % 2 === 0) ? 12 : -12;
@@ -396,7 +452,7 @@ export class Wave {
     private moveEnemies(player: PlayerSpaceShip): void {
         const playerCenter = player.getXCoord() + (player.getWidth() / 2);
 
-        this.enemies.forEach((enemy: Enemy1) => {
+        this.enemies.forEach((enemy: EnemyShip) => {
             const behavior = this.enemyBehaviors.get(enemy);
             if (!behavior) {
                 enemy.advanceTowardPlayer(playerCenter, this.horizontalStep, this.verticalStep);
@@ -424,13 +480,15 @@ export class Wave {
             enemy.advanceTowardPlayer(randomTargetX, this.horizontalStep, behavior.randomDriftY);
         });
 
-        this.enemies = this.enemies.filter((enemy: Enemy1) => {
+        this.enemies = this.enemies.filter((enemy: EnemyShip) => {
             return !enemy.isOffScreen();
         });
 
-        this.enemyBehaviors.forEach((_value, enemy: Enemy1) => {
+        this.enemyBehaviors.forEach((_value, enemy: EnemyShip) => {
             if (!this.enemies.includes(enemy)) {
                 this.enemyBehaviors.delete(enemy);
+                this.enemyHitPoints.delete(enemy);
+                this.enemyScoreValues.delete(enemy);
             }
         });
     }

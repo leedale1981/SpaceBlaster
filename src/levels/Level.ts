@@ -2,6 +2,8 @@ import { PlayerSpaceShip } from "../sprites/PlayerSpaceShip";
 
 export type CollisionSummary = {
 	enemiesDestroyed: number;
+	enemyScoreGained: number;
+	asteroidHits: number;
 	asteroidsDestroyed: number;
 	playerHit: boolean;
 };
@@ -35,6 +37,8 @@ export class Level {
 		// Base level has no collision behavior.
 		return {
 			enemiesDestroyed: 0,
+			enemyScoreGained: 0,
+			asteroidHits: 0,
 			asteroidsDestroyed: 0,
 			playerHit: false
 		};

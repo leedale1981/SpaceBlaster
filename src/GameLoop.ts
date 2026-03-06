@@ -6,6 +6,8 @@ import { Star } from "./sprites/Star";
 import { CollisionSummary, Level } from "./levels/Level";
 import { LevelOne } from "./levels/LevelOne";
 import { Sprite } from "./sprites/Sprite";
+import { SynthMusic } from "./SynthMusic";
+import { SoundEffects } from "./SoundEffects";
 
 export class GameLoop extends GameObject {
     private playerSprite: PlayerSpaceShip;
@@ -19,6 +21,9 @@ export class GameLoop extends GameObject {
     private gameWon: boolean;
     private currentLevelNumber: number;
     private readonly maxLevel: number;
+    private music: SynthMusic;
+    private soundEffects: SoundEffects;
+    private musicStarted: boolean;
 
     constructor(ctx: CanvasRenderingContext2D) {
         super(ctx);
@@ -34,9 +39,13 @@ export class GameLoop extends GameObject {
         this.lives = 10;
         this.gameOver = false;
         this.gameWon = false;
+        this.music = new SynthMusic();
+        this.soundEffects = new SoundEffects();
+        this.musicStarted = false;
         this.setupBackgroundStars();
         this.setupPlayerSpaceshipKeyboardInputs();
         this.setupLevel();
+        this.setupMusicStartListener();
     }
 
     private setupPlayerSpaceshipKeyboardInputs = () => {
@@ -79,6 +88,8 @@ export class GameLoop extends GameObject {
 
         if (!this.isGameFinished()) {
             this.keyboardInput.startInputLoop();
+        } else {
+            this.music.stop();
         }
 
         this.clearCanvas();
@@ -168,8 +179,13 @@ export class GameLoop extends GameObject {
     private detectCollisions() {
         const collisionSummary: CollisionSummary = this.currentLevel.detectCollisions(this.playerSprite);
 
-        if (collisionSummary.enemiesDestroyed > 0) {
-            this.score = this.score + (collisionSummary.enemiesDestroyed * 100);
+        if (collisionSummary.enemyScoreGained > 0) {
+            this.score = this.score + collisionSummary.enemyScoreGained;
+            this.soundEffects.playExplosion();
+        }
+
+        if (collisionSummary.asteroidHits > 0) {
+            this.soundEffects.playRockBreak();
         }
 
         if (collisionSummary.asteroidsDestroyed > 0) {
@@ -178,6 +194,7 @@ export class GameLoop extends GameObject {
 
         if (collisionSummary.playerHit) {
             this.playerSprite.handleHit();
+            this.soundEffects.playExplosion();
             this.score = this.score - 100;
             this.lives = Math.max(0, this.lives - 1);
 
@@ -204,5 +221,21 @@ export class GameLoop extends GameObject {
 
     private isGameFinished(): boolean {
         return this.gameOver || this.gameWon;
+    }
+
+    private setupMusicStartListener(): void {
+        const startMusic = () => {
+            if (this.musicStarted) {
+                return;
+            }
+
+            this.musicStarted = true;
+            this.music.start();
+            this.soundEffects.unlock();
+        };
+
+        window.addEventListener("keydown", startMusic, { once: true });
+        window.addEventListener("mousedown", startMusic, { once: true });
+        window.addEventListener("touchstart", startMusic, { once: true });
     }
 }
