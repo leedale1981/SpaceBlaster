@@ -44,6 +44,31 @@ export class Enemy1 extends Sprite {
         
     }
 
+    public advanceTowardPlayer(targetX: number, horizontalStep: number, verticalStep: number): void {
+        const enemyCenter = this.options.x + (this.options.width / 2);
+
+        if (enemyCenter < targetX - horizontalStep) {
+            this.options.x = this.options.x + horizontalStep;
+        } else if (enemyCenter > targetX + horizontalStep) {
+            this.options.x = this.options.x - horizontalStep;
+        }
+
+        // Push enemies down the screen toward the player.
+        this.options.y = this.options.y + verticalStep;
+
+        if (this.options.x < 0) {
+            this.options.x = 0;
+        }
+
+        if (this.options.x + this.options.width > this.ctx.canvas.width) {
+            this.options.x = this.ctx.canvas.width - this.options.width;
+        }
+    }
+
+    public isOffScreen(): boolean {
+        return this.options.y > this.ctx.canvas.height;
+    }
+
     private skew = () => {
         if (this.options.width > 40) {
             this.options.width = this.options.width / 1.1;

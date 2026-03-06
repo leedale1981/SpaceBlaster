@@ -3,16 +3,22 @@ import { GameObject } from "./GameObject";
 import { KeyboardInput } from "./KeyboardInput";
 import { PlayerSpaceShip } from "./sprites/PlayerSpaceShip";
 import { Star } from "./sprites/Star";
-//import { Level } from "./levels/Level";
-//import { LevelOne } from "./levels/LevelOne";
+import { CollisionSummary, Level } from "./levels/Level";
+import { LevelOne } from "./levels/LevelOne";
 import { Sprite } from "./sprites/Sprite";
 
 export class GameLoop extends GameObject {
     private playerSprite: PlayerSpaceShip;
     private keyboardInput: KeyboardInput;
     private stars: Array<Star>;
-    //private levels: Array<Level>;
+    private currentLevel: Level;
     private sprites: Array<Sprite>;
+    private score: number;
+    private lives: number;
+    private gameOver: boolean;
+    private gameWon: boolean;
+    private currentLevelNumber: number;
+    private readonly maxLevel: number;
 
     constructor(ctx: CanvasRenderingContext2D) {
         super(ctx);
@@ -20,10 +26,17 @@ export class GameLoop extends GameObject {
         this.playerSprite = new PlayerSpaceShip(ctx);
         this.keyboardInput = new KeyboardInput();
         this.stars = [];
-        //this.levels = [];
+        this.currentLevelNumber = 1;
+        this.maxLevel = 10;
+        this.currentLevel = new LevelOne(this.ctx, this.currentLevelNumber);
         this.sprites = [this.playerSprite];
+        this.score = 0;
+        this.lives = 10;
+        this.gameOver = false;
+        this.gameWon = false;
         this.setupBackgroundStars();
         this.setupPlayerSpaceshipKeyboardInputs();
+        this.setupLevel();
     }
 
     private setupPlayerSpaceshipKeyboardInputs = () => {
@@ -57,22 +70,47 @@ export class GameLoop extends GameObject {
         }
     }
 
-    // private setupLevels = () => {
-    //     this.levels.push(new LevelOne());
-    // }
+    private setupLevel = () => {
+        this.currentLevel.start();
+    }
 
     public render = () => {
         window.requestAnimationFrame(this.render.bind(this));
-        this.keyboardInput.inputLoop();
+
+        if (!this.isGameFinished()) {
+            this.keyboardInput.startInputLoop();
+        }
+
         this.clearCanvas();
-        this.moveStars();
+
+        if (!this.isGameFinished()) {
+            this.moveStars();
+        } else {
+            this.stars.forEach((star: Star) => {
+                star.render();
+            });
+        }
 
         for (let index = 0; index < this.sprites.length; index++) {
             let sprite = this.sprites[index];
             sprite.render();
         }
 
-        this.detectCollisions();
+        if (!this.isGameFinished()) {
+            this.currentLevel.render(this.playerSprite);
+            this.detectCollisions();
+            this.progressLevels();
+        }
+
+        this.renderHud();
+
+        if (this.gameOver) {
+            this.renderGameOverMessage();
+        }
+
+        if (this.gameWon) {
+            this.renderWinMessage();
+        }
     }
 
     private moveStars = () => {
@@ -84,10 +122,87 @@ export class GameLoop extends GameObject {
 
     private clearCanvas = () => {
         this.ctx.fillStyle = "black";
-        this.ctx.fillRect(0, 0, GameConfig.canvasWidth, GameConfig.canvasHeight);
+        this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+    }
+
+    private renderHud = () => {
+        this.ctx.fillStyle = "white";
+        this.ctx.font = "bold 24px Arial";
+        this.ctx.textAlign = "left";
+        this.ctx.fillText(`Score: ${this.score}`, 20, 36);
+        this.ctx.fillText(`Level: ${this.currentLevelNumber}`, 20, 66);
+
+        this.ctx.fillStyle = "#ff4d4d";
+        this.ctx.textAlign = "right";
+        this.ctx.fillText(`${"❤".repeat(this.lives)}`, this.ctx.canvas.width - 20, 36);
+    }
+
+    private renderGameOverMessage = () => {
+        this.ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
+        this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+
+        this.ctx.fillStyle = "#ff5c5c";
+        this.ctx.font = "bold 64px Arial";
+        this.ctx.textAlign = "center";
+        this.ctx.fillText("GAME OVER", this.ctx.canvas.width / 2, this.ctx.canvas.height / 2);
+
+        this.ctx.fillStyle = "white";
+        this.ctx.font = "bold 26px Arial";
+        this.ctx.fillText(`Final Score: ${this.score}`, this.ctx.canvas.width / 2, (this.ctx.canvas.height / 2) + 48);
+    }
+
+    private renderWinMessage = () => {
+        this.ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
+        this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+
+        this.ctx.fillStyle = "#7CFF6B";
+        this.ctx.font = "bold 56px Arial";
+        this.ctx.textAlign = "center";
+        this.ctx.fillText("YOU WIN", this.ctx.canvas.width / 2, this.ctx.canvas.height / 2);
+
+        this.ctx.fillStyle = "white";
+        this.ctx.font = "bold 26px Arial";
+        this.ctx.fillText(`Final Score: ${this.score}`, this.ctx.canvas.width / 2, (this.ctx.canvas.height / 2) + 48);
     }
 
     private detectCollisions() {
-        
+        const collisionSummary: CollisionSummary = this.currentLevel.detectCollisions(this.playerSprite);
+
+        if (collisionSummary.enemiesDestroyed > 0) {
+            this.score = this.score + (collisionSummary.enemiesDestroyed * 100);
+        }
+
+        if (collisionSummary.asteroidsDestroyed > 0) {
+            this.score = this.score + (collisionSummary.asteroidsDestroyed * 200);
+        }
+
+        if (collisionSummary.playerHit) {
+            this.playerSprite.handleHit();
+            this.score = this.score - 100;
+            this.lives = Math.max(0, this.lives - 1);
+
+            if (this.lives === 0) {
+                this.gameOver = true;
+            }
+        }
+    }
+
+    private progressLevels(): void {
+        if (!this.currentLevel.isCompleted()) {
+            return;
+        }
+
+        if (this.currentLevelNumber >= this.maxLevel) {
+            this.gameWon = true;
+            return;
+        }
+
+        this.currentLevelNumber++;
+        this.currentLevel = new LevelOne(this.ctx, this.currentLevelNumber);
+        this.currentLevel.start();
+    }
+
+    private isGameFinished(): boolean {
+        return this.gameOver || this.gameWon;
     }
 }

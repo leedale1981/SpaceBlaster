@@ -24,22 +24,28 @@ export class Bullet extends Sprite {
     }
 
     public moveForward() {
-        let self = this;
+        if (this.options.y > 0) {
+            this.options.y = this.options.y - this.options.deltaYForward;
+        }
+    }
 
-        setTimeout(() => {
-            if (self.options.y > 0) {
-                self.options.y = self.options.y - self.options.deltaYForward;
-                self.moveForward();
-            }
-        }, 5);
+    public render(): void {
+        const image = this.options.image;
+
+        if (image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0 && image.naturalHeight > 0) {
+            super.render();
+            return;
+        }
+
+        this.ctx.fillStyle = "#f5f55a";
+        this.ctx.fillRect(this.getXCoord(), this.getYCoord(), this.getWidth(), this.getHeight());
     }
     
     public isAtEdge(): boolean {
-        if (this.getYCoord() <= 0) {
-            this.ctx.clearRect(this.getXCoord(), this.getYCoord(), this.options.width, this.options.height);
-            return true
-        }
+        return this.getYCoord() <= 0;
+    }
 
-        return false;
+    public getInertia(): number {
+        return Math.max(1, this.options.deltaYForward * this.getWidth() * 0.08);
     }
 }

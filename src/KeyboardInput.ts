@@ -33,14 +33,18 @@ export class KeyboardInput {
         this.keyDown[event.keyCode] = false;
     }
 
-    public inputLoop = (): void => {
+    public startInputLoop = (): void => {
         for (var key in this.keyDown) {
             var is_down: boolean = this.keyDown[key];
 
             if (is_down) {
                 var callback: () => void = this.keyCallback[key];
                 if (callback != null) {
-                    callback();
+                    try {
+                        callback();
+                    } catch {
+                        // Ignore callback errors for this frame to keep the game loop alive.
+                    }
                 }
             }
         }
@@ -51,7 +55,11 @@ export class KeyboardInput {
             if (is_up) {
                 var callback: () => void = this.keyUpCallback[key];
                 if (callback != null) {
-                    callback();
+                    try {
+                        callback();
+                    } catch {
+                        // Ignore key-up callback errors for this frame.
+                    }
                     this.keyUp[key] = false;
                 }
             }

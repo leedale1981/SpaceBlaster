@@ -14,12 +14,25 @@ export class Sprite extends GameObject {
     }
     
     public render() {
-        this.ctx.drawImage(
-            this.options.image, 
-            this.options.x, 
-            this.options.y, 
-            this.options.width, 
-            this.options.height);
+        const image = this.options.image;
+        if (!(image instanceof HTMLImageElement)) {
+            return;
+        }
+
+        if (!image.complete || image.naturalWidth === 0 || image.naturalHeight === 0) {
+            return;
+        }
+
+        try {
+            this.ctx.drawImage(
+                image,
+                this.options.x,
+                this.options.y,
+                this.options.width,
+                this.options.height);
+        } catch {
+            // Skip this sprite for the current frame if the browser rejects the image.
+        }
     }
 
     public moveLeft() {
@@ -57,6 +70,14 @@ export class Sprite extends GameObject {
     public getYCoord(): number {
         let self = this;
         return self.options.y;
+    }
+
+    public getWidth(): number {
+        return this.options.width;
+    }
+
+    public getHeight(): number {
+        return this.options.height;
     }
 
     public collisionDetected() {
